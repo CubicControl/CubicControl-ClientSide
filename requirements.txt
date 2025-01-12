@@ -2,3 +2,4 @@ Flask==3.1.0
 ping3==4.0.8
 wakeonlan==3.1.0
 requests~=2.32.3
+Flask-Cors~=5.0.0
