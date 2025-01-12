@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Server Control Panel</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      text-align: center;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .status {
+      margin: 20px 0;
+    }
+    .status img {
+      vertical-align: middle;
+      width: 30px;
+      height: 30px;
+    }
+    .buttons {
+      margin-top: 20px;
+    }
+    .buttons button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+    .buttons button:hover {
+      background-color: #45a049;
+    }
+    .buttons button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+  </style>
+  <script>
+    async function wakeOnLan() {
+      const authKey = "{{ auth_key }}";
+      try {
+        const response = await fetch('/wake', {
+          method: 'POST',
+          headers: {
+            'Authorization': authKey,
+            'Content-Type': 'application/json'
+          }
+        });
+        const result = await response.json();
+        alert(result.message || result.error);
+      } catch (error) {
+        alert(`Error: ${error}`);
+      }
+    }
+
+    async function stopServer() {
+      const authKey = "{{ auth_key }}";
+      try {
+        const response = await fetch('/stop', {
+          method: 'POST',
+          headers: {
+            'Authorization': authKey,
+            'Content-Type': 'application/json'
+          }
+        });
+        const result = await response.json();
+        alert(result.message || result.error);
+      } catch (error) {
+        alert(`Error: ${error}`);
+      }
+    }
+
+    async function startServer() {
+      const authKey = "{{ auth_key }}";
+      try {
+        const response = await fetch('/start', {
+          method: 'POST',
+          headers: {
+            'Authorization': authKey,
+            'Content-Type': 'application/json'
+          }
+        });
+        const result = await response.json();
+        alert(result.message || result.error);
+      } catch (error) {
+        alert(`Error: ${error}`);
+      }
+    }
+
+    async function restartServer() {
+      const authKey = "{{ auth_key }}";
+      try {
+        const response = await fetch('/restart', {
+          method: 'POST',
+          headers: {
+            'Authorization': authKey,
+            'Content-Type': 'application/json'
+          }
+        });
+        const result = await response.json();
+        alert(result.message || result.error);
+      } catch (error) {
+        alert(`Error: ${error}`);
+      }
+    }
+
+    async function checkServerStatus() {
+      try {
+        const response = await fetch('/status');
+        const restartButton = document.getElementById('restartButton');
+        const wakeOnLanButton = document.getElementById('wakeOnLanButton');
+        if (response.status === 200) {
+          // Fully loaded
+          document.getElementById('host-status-icon').src = '/static/resources/online.png';
+          document.getElementById('minecraft-status-icon').src = '/static/resources/online.png';
+          restartButton.disabled = false;
+          wakeOnLanButton.disabled = true;
+        } else if (response.status === 205) {
+          // Booting
+          document.getElementById('host-status-icon').src = '/static/resources/loading.gif'; // Change to booting icon
+          document.getElementById('minecraft-status-icon').src = '/static/resources/loading.gif';
+          restartButton.disabled = true;
+          wakeOnLanButton.disabled = true;
+        } else if (response.status === 206) {
+          // Offline
+          document.getElementById('host-status-icon').src = '/static/resources/online.png';
+          document.getElementById('minecraft-status-icon').src = '/static/resources/offline.png';
+          restartButton.disabled = true;
+          wakeOnLanButton.disabled = true;
+        } else {
+          // General failure or unknown status
+          document.getElementById('host-status-icon').src = '/static/resources/offline.png';
+          document.getElementById('minecraft-status-icon').src = '/static/resources/offline.png';
+          restartButton.disabled = true;
+          wakeOnLanButton.disabled = false;
+        }
+      } catch (error) {
+        // Error case
+        document.getElementById('host-status-icon').src = '/static/resources/offline.png';
+        document.getElementById('minecraft-status-icon').src = '/static/resources/offline.png';
+        document.getElementById('restartButton').disabled = true;
+      }
+    }
+
+    setInterval(checkServerStatus, 5000); // Check every 5 seconds
+  </script>
+</head>
+<body>
+<div class="container">
+  <div class="status">
+    <h2>Host Machine Status: <img id="host-status-icon" src="/static/resources/loading.gif" alt="Host Status"></h2>
+  </div>
+  <div class="status">
+    <h2>Minecraft Server Status: <img id="minecraft-status-icon" src="/static/resources/loading.gif" alt="Minecraft Status"></h2>
+  </div>
+  <div class="buttons">
+    <button id="wakeOnLanButton" onclick="wakeOnLan()" disabled>Wake on LAN</button>
+    <button onclick="startServer()">Start Server</button>
+    <button onclick="stopServer()">Stop Server</button>
+    <button id="restartButton" onclick="restartServer()" disabled>Restart Server</button>
+  </div>
+</div>
+</body>
+</html>
