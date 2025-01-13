@@ -127,36 +127,57 @@
         const response = await fetch('/status');
         const restartButton = document.getElementById('restartButton');
         const wakeOnLanButton = document.getElementById('wakeOnLanButton');
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
         if (response.status === 200) {
           // Fully loaded
           document.getElementById('host-status-icon').src = '/static/resources/online.png';
           document.getElementById('minecraft-status-icon').src = '/static/resources/online.png';
           restartButton.disabled = false;
           wakeOnLanButton.disabled = true;
+          startButton.disabled = true;
+          stopButton.disabled = false;
         } else if (response.status === 205) {
           // Booting Server
-          document.getElementById('host-status-icon').src = '/static/resources/online.png'; //
+          document.getElementById('host-status-icon').src = '/static/resources/online.png';
           document.getElementById('minecraft-status-icon').src = '/static/resources/loading.gif';
           restartButton.disabled = true;
           wakeOnLanButton.disabled = true;
+          startButton.disabled = true;
+          stopButton.disabled = true;
         } else if (response.status === 206) {
           // Server Offline
           document.getElementById('host-status-icon').src = '/static/resources/online.png';
           document.getElementById('minecraft-status-icon').src = '/static/resources/offline.png';
           restartButton.disabled = true;
           wakeOnLanButton.disabled = true;
+          startButton.disabled = false;
+          stopButton.disabled = true;
+        } else if (response.status === 207) {
+          // Server Restarting
+          document.getElementById('host-status-icon').src = '/static/resources/online.png';
+          document.getElementById('minecraft-status-icon').src = '/static/resources/loading.gif';
+          restartButton.disabled = true;
+          wakeOnLanButton.disabled = true;
+          startButton.disabled = true;
+          stopButton.disabled = true;
         } else {
           // General failure/unknown status or Both machine and server are offline
           document.getElementById('host-status-icon').src = '/static/resources/offline.png';
           document.getElementById('minecraft-status-icon').src = '/static/resources/offline.png';
           restartButton.disabled = true;
           wakeOnLanButton.disabled = false;
+          startButton.disabled = true;
+          stopButton.disabled = true;
         }
       } catch (error) {
         // Error case
         document.getElementById('host-status-icon').src = '/static/resources/offline.png';
         document.getElementById('minecraft-status-icon').src = '/static/resources/offline.png';
         document.getElementById('restartButton').disabled = true;
+        document.getElementById('wakeOnLanButton').disabled = false;
+        document.getElementById('startButton').disabled = true;
+        document.getElementById('stopButton').disabled = true;
       }
     }
 
@@ -173,8 +194,8 @@
   </div>
   <div class="buttons">
     <button id="wakeOnLanButton" onclick="wakeOnLan()" disabled>Wake on LAN</button>
-    <button onclick="startServer()">Start Server</button>
-    <button onclick="stopServer()">Stop Server</button>
+    <button id="startButton" onclick="startServer()" disabled>Start Server</button>
+    <button id="stopButton" onclick="stopServer()" disabled>Stop Server</button>
     <button id="restartButton" onclick="restartServer()" disabled>Restart Server</button>
   </div>
 </div>
