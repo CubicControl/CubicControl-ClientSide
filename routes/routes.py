@@ -6,9 +6,10 @@ from flask import render_template, jsonify, Blueprint, request, session, redirec
 from wakeonlan import send_magic_packet
 
 from utils.config import TARGET_IP_ADDRESS, TARGET_FLASK_SERVER_PORT, TARGET_MAC_ADDRESS, LOGIN_USERNAME, \
-    LOGIN_PASSWORD
-from utils.wrappers import handle_timeout, require_auth, login_required
+    LOGIN_PASSWORD, AUTH_KEY
+from utils.wrappers import handle_timeout, login_required
 
+auth_key_header = {'Authorization': f'Bearer {AUTH_KEY}'}
 bp = Blueprint('routes', __name__)
 
 last_manual_start: Optional[datetime.datetime] = None
@@ -36,8 +37,8 @@ def logout():
     return jsonify({"message": "Logged out successfully"}), 200
 
 @bp.route('/status', methods=['GET'])
-@login_required
 @handle_timeout
+@login_required
 def status():
     try:
         response = requests.get(f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/status", timeout=5)
@@ -51,16 +52,6 @@ def status():
 def wake():
     send_magic_packet(TARGET_MAC_ADDRESS, ip_address=TARGET_IP_ADDRESS)
     return jsonify({"message": "WOL packet sent successfully! Machine is starting..."}), 200
-
-@bp.route('/stop', methods=['POST'])
-@handle_timeout
-@login_required
-def stop():
-    try:
-        response = requests.post(f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/stop")
-        return jsonify({"message": response.text}), response.status_code
-    except requests.exceptions.RequestException as e:
-        return jsonify({"status": "off", "error": f"Unable to connect to the server: {e}"}), 500
 
 @bp.route('/start', methods=['POST'])
 @handle_timeout
@@ -76,7 +67,18 @@ def start():
             last_manual_start = datetime.datetime.now()
         return jsonify({"message": response.text }), response.status_code
     except requests.exceptions.RequestException as e:
-        return jsonify({"status": "off", "error": f"Unable to connect to the server: {e}"}), 500
+        return jsonify({"error": f"Unable to connect to the server: {e}"}), 500
+
+@bp.route('/stop', methods=['POST'])
+@handle_timeout
+@login_required
+def stop():
+    try:
+        response = requests.post(f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/stop")
+        return jsonify({"message": response.text}), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"Unable to connect to the server: {e}"}), 500
+
 
 @bp.route('/restart', methods=['POST'])
 @handle_timeout
@@ -86,5 +88,5 @@ def restart():
         response = requests.post(f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/restart")
         return jsonify({"message": response.text}), response.status_code
     except requests.exceptions.RequestException as e:
-        return jsonify({"status": "off", "error": f"Unable to connect to the server: {e}"}), 500
+        return jsonify({"error": f"Unable to connect to the server: {e}"}), 500
 

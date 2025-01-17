@@ -18,16 +18,6 @@ def handle_timeout(f):
             return jsonify({"error": str(e)}), 500
     return decorated_function
 
-def require_auth(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        # Check if the incoming request is authorized
-        auth_header = request.headers.get('Authorization', '').replace('Bearer ', '')
-        if auth_header != AUTH_KEY:
-            return jsonify({"error": "Unauthorized"}), 403
-        return f(*args, **kwargs)
-    return decorated_function
-
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
