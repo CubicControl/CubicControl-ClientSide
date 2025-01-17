@@ -1,0 +1,40 @@
+import os
+from functools import wraps
+
+import requests
+from flask import jsonify, request, session, redirect, url_for
+
+from utils.config import AUTH_KEY
+
+
+def handle_timeout(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except requests.exceptions.Timeout:
+            return jsonify({"error": "Machine is not reachable"}), 500
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    return decorated_function
+
+def require_auth(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Check if the incoming request is authorized
+        auth_header = request.headers.get('Authorization', '').replace('Bearer ', '')
+        if auth_header != AUTH_KEY:
+            return jsonify({"error": "Unauthorized"}), 403
+        return f(*args, **kwargs)
+    return decorated_function
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('routes.login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+

@@ -3,64 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Server Control Panel</title>
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #f0f0f0;
-      font-family: Arial, sans-serif;
-    }
-    .container {
-      text-align: center;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    .status {
-      margin: 20px 0;
-    }
-    .status img {
-      vertical-align: middle;
-      width: 30px;
-      height: 30px;
-    }
-    .buttons {
-      margin-top: 20px;
-    }
-    .buttons button {
-      background-color: #4CAF50;
-      color: white;
-      padding: 15px 32px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 4px 2px;
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
-      transition: background-color 0.3s;
-    }
-    .buttons button:hover {
-      background-color: #45a049;
-    }
-    .buttons button:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-    }
-  </style>
+  <title>SpiritServer Controler Panel</title>
+  <link rel="stylesheet" href="/static/style.css">
+
   <script>
+
     async function wakeOnLan() {
-      const authKey = "{{ auth_key }}";
       try {
         const response = await fetch('/wake', {
           method: 'POST',
           headers: {
-            'Authorization': authKey,
             'Content-Type': 'application/json'
           }
         });
@@ -72,12 +24,10 @@
     }
 
     async function stopServer() {
-      const authKey = "{{ auth_key }}";
       try {
         const response = await fetch('/stop', {
           method: 'POST',
           headers: {
-            'Authorization': authKey,
             'Content-Type': 'application/json'
           }
         });
@@ -89,12 +39,10 @@
     }
 
     async function startServer() {
-      const authKey = "{{ auth_key }}";
       try {
         const response = await fetch('/start', {
           method: 'POST',
           headers: {
-            'Authorization': authKey,
             'Content-Type': 'application/json'
           }
         });
@@ -106,12 +54,10 @@
     }
 
     async function restartServer() {
-      const authKey = "{{ auth_key }}";
       try {
         const response = await fetch('/restart', {
           method: 'POST',
           headers: {
-            'Authorization': authKey,
             'Content-Type': 'application/json'
           }
         });
@@ -182,6 +128,7 @@
     }
 
     setInterval(checkServerStatus, 5000); // Check every 5 seconds
+
   </script>
 </head>
 <body>
