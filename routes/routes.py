@@ -7,7 +7,7 @@ from wakeonlan import send_magic_packet
 
 from utils.config import TARGET_IP_ADDRESS, TARGET_FLASK_SERVER_PORT, TARGET_MAC_ADDRESS, LOGIN_USERNAME, \
     LOGIN_PASSWORD, AUTH_KEY
-from utils.wrappers import handle_timeout, login_required
+from utils.wrappers import handle_timeout, login_required, require_auth
 
 auth_key_header = {'Authorization': f'Bearer {AUTH_KEY}'}
 bp = Blueprint('routes', __name__)
@@ -41,7 +41,11 @@ def logout():
 @login_required
 def status():
     try:
-        response = requests.get(f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/status", timeout=5)
+        response = requests.get(
+            f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/status",
+            headers=auth_key_header,
+            timeout=5
+        )
         return jsonify({"message": response.text}), response.status_code
     except requests.exceptions.RequestException as e:
         return jsonify({"error": "Unable to connect to the server"}), 500
@@ -62,7 +66,7 @@ def start():
         return jsonify({"error": "Server was started too recently"}), 400
 
     try:
-        response = requests.post(f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/start")
+        response = requests.post(f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/start", headers=auth_key_header)
         if response.status_code == 200:
             last_manual_start = datetime.datetime.now()
         return jsonify({"message": response.text }), response.status_code
@@ -74,7 +78,7 @@ def start():
 @login_required
 def stop():
     try:
-        response = requests.post(f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/stop")
+        response = requests.post(f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/stop", headers=auth_key_header)
         return jsonify({"message": response.text}), response.status_code
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"Unable to connect to the server: {e}"}), 500
@@ -85,7 +89,7 @@ def stop():
 @login_required
 def restart():
     try:
-        response = requests.post(f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/restart")
+        response = requests.post(f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/restart", headers=auth_key_header)
         return jsonify({"message": response.text}), response.status_code
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"Unable to connect to the server: {e}"}), 500
