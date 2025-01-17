@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SpiritServer Controler Panel</title>
-  <link rel="stylesheet" href="/static/style.css">
-
+  <title>SpiritServer Control Panel</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" type="image/x-icon" href="/static/resources/favicon.ico">
   <script>
 
     async function wakeOnLan() {
@@ -132,18 +132,23 @@
   </script>
 </head>
 <body>
-<div class="container">
-  <div class="status">
-    <h2>Host Machine Status: <img id="host-status-icon" src="/static/resources/loading.gif" alt="Host Status"></h2>
+<div class="page-wrapper">
+  <div class="logo-container">
+    <img src="/static/resources/jmglogo.png" alt="JMG Logo">
   </div>
-  <div class="status">
-    <h2>Minecraft Server Status: <img id="minecraft-status-icon" src="/static/resources/loading.gif" alt="Minecraft Status"></h2>
-  </div>
-  <div class="buttons">
-    <button id="wakeOnLanButton" onclick="wakeOnLan()" disabled>Wake on LAN</button>
-    <button id="startButton" onclick="startServer()" disabled>Start Server</button>
-    <button id="stopButton" onclick="stopServer()" disabled>Stop Server</button>
-    <button id="restartButton" onclick="restartServer()" disabled>Restart Server</button>
+  <div class="container">
+    <div class="status">
+      <h2>Host Machine Status: <img id="host-status-icon" src="/static/resources/loading.gif" alt="Host Status"></h2>
+    </div>
+    <div class="status">
+      <h2>Minecraft Server Status: <img id="minecraft-status-icon" src="/static/resources/loading.gif" alt="Minecraft Status"></h2>
+    </div>
+    <div class="buttons">
+      <button id="wakeOnLanButton" onclick="wakeOnLan()" disabled>Wake on LAN</button>
+      <button id="startButton" onclick="startServer()" disabled>Start Server</button>
+      <button id="stopButton" onclick="stopServer()" disabled>Stop Server</button>
+      <button id="restartButton" onclick="restartServer()" disabled>Restart Server</button>
+    </div>
   </div>
 </div>
 </body>

@@ -7,7 +7,7 @@ from wakeonlan import send_magic_packet
 
 from utils.config import TARGET_IP_ADDRESS, TARGET_FLASK_SERVER_PORT, TARGET_MAC_ADDRESS, LOGIN_USERNAME, \
     LOGIN_PASSWORD, AUTH_KEY
-from utils.wrappers import handle_timeout, login_required, require_auth
+from utils.wrappers import handle_timeout, login_required
 
 auth_key_header = {'Authorization': f'Bearer {AUTH_KEY}'}
 bp = Blueprint('routes', __name__)

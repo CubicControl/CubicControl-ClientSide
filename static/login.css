@@ -1,26 +1,37 @@
-/* static/style.css */
+/* static/login.css */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f2f5;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    height: 100vh;
+    background-color: lightgray;
+    font-family: Arial, sans-serif;
     margin: 0;
 }
 
+.logo-container {
+    margin-top: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.logo-container img {
+    max-width: 400px; /* Increased size for the logo */
+    height: auto;
+}
+
 .container {
-    background-color: #fff;
+    background-color: whitesmoke;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 300px;
-    text-align: center;
+    text-align: left; /* Change text alignment to left */
 }
 
 h2 {
     margin-bottom: 20px;
     color: #333;
+    text-align: center; /* Keep the heading centered */
 }
 
 form {
