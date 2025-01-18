@@ -15,7 +15,7 @@ def handle_timeout(f):
         except requests.exceptions.Timeout:
             return jsonify({"error": "Machine is not reachable"}), 500
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            return jsonify({"error": "Query timeout"}), 500
     return decorated_function
 
 def require_auth(f):
