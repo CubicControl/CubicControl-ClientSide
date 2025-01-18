@@ -31,6 +31,10 @@ def login():
             return jsonify({"error": "Invalid credentials"}), 401
     return render_template('login.html')
 
+@bp.route('/socket-config')
+def socket_config():
+    return jsonify({'socket_url': 'http://192.168.1.24:37000'})
+
 @bp.route('/logout', methods=['POST'])
 def logout():
     session.pop('logged_in', None)
