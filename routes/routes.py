@@ -36,6 +36,7 @@ def logout():
     session.pop('logged_in', None)
     return jsonify({"message": "Logged out successfully"}), 200
 
+
 @bp.route('/status', methods=['GET'])
 @handle_timeout
 @login_required
