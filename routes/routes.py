@@ -36,7 +36,6 @@ def login():
     return render_template('login.html')
 
 @bp.route('/logout', methods=['POST'])
-@require_auth
 def logout():
     session.pop('logged_in', None)
     return jsonify({"message": "Logged out successfully"}), 200
