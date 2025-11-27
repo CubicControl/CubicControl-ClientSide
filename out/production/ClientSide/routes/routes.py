@@ -7,7 +7,7 @@ from wakeonlan import send_magic_packet
 
 from utils.config import TARGET_IP_ADDRESS, TARGET_FLASK_SERVER_PORT, TARGET_MAC_ADDRESS, LOGIN_USERNAME, \
     LOGIN_PASSWORD, AUTH_KEY
-from utils.wrappers import handle_timeout, login_required, require_auth
+from utils.wrappers import handle_timeout, login_required
 from utils.state import load_last_manual_start, save_last_manual_start
 
 
@@ -36,7 +36,6 @@ def login():
     return render_template('login.html')
 
 @bp.route('/logout', methods=['POST'])
-@require_auth
 def logout():
     session.pop('logged_in', None)
     return jsonify({"message": "Logged out successfully"}), 200

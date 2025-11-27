@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpiritServer Login</title>
+    <link rel="stylesheet" href="/static/login.css">
+    <link rel="icon" type="image/x-icon" href="/static/resources/favicon.ico">
+    <script>
+      async function handleLogin(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+
+        try {
+          const response = await fetch('/login', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (response.ok) {
+            window.location.href = '/';
+          } else {
+            const result = await response.json();
+            alert(result.error || 'Invalid credentials');
+          }
+        } catch (error) {
+          alert(`Error: ${error}`);
+        }
+      }
+    </script>
+</head>
+<body>
+<div class="page-wrapper">
+    <div class="logo-container">
+        <img src="/static/resources/jmglogo.png" alt="JMG Logo">
+    </div>
+    <div class="container">
+        <h2>Login</h2>
+        <form id="loginForm" method="POST" onsubmit="handleLogin(event)">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <br>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

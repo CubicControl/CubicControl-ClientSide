@@ -24,14 +24,8 @@ def handle_timeout(f):
 def require_auth(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        raw_header = request.headers.get('Authorization', '')
-        auth_token = raw_header.replace('Bearer ', '')
-        if not raw_header:
-            logger.warning("Authorization header missing on protected endpoint")
-            return jsonify({"error": "Unauthorized, missing Authorization: Bearer token"}), 401
-
+        auth_token = request.headers.get('Authorization', '').replace('Bearer ', '')
         if auth_token != AUTH_KEY:
-            logger.warning("Authorization token mismatch against AUTHKEY_SERVER_WEBSITE")
             return jsonify({"error": "Unauthorized, invalid token"}), 401
         return f(*args, **kwargs)
     return decorated_function
