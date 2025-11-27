@@ -84,7 +84,7 @@
           wakeOnLanButton.disabled = true;
           startButton.disabled = true;
           stopButton.disabled = false;
-        } else if (response.status === 205) {
+        } else if (response.status === 205 || response.status === 207) {
           // Booting Server
           document.getElementById('host-status-icon').src = '/static/resources/online.png';
           document.getElementById('minecraft-status-icon').src = '/static/resources/loading.gif';
@@ -99,14 +99,6 @@
           restartButton.disabled = true;
           wakeOnLanButton.disabled = true;
           startButton.disabled = false;
-          stopButton.disabled = true;
-        } else if (response.status === 207) {
-          // Server Restarting
-          document.getElementById('host-status-icon').src = '/static/resources/online.png';
-          document.getElementById('minecraft-status-icon').src = '/static/resources/loading.gif';
-          restartButton.disabled = true;
-          wakeOnLanButton.disabled = true;
-          startButton.disabled = true;
           stopButton.disabled = true;
         } else {
           // General failure/unknown status or Both machine and server are offline
@@ -124,6 +116,7 @@
           document.getElementById('wakeOnLanButton').disabled = false;
           document.getElementById('startButton').disabled = true;
           document.getElementById('stopButton').disabled = true;
+          console.error('Error checking server status:', error);
         }
     }
 

@@ -26,14 +26,18 @@ def require_auth(f):
     def decorated_function(*args, **kwargs):
         raw_header = request.headers.get('Authorization', '')
         auth_token = raw_header.replace('Bearer ', '')
-        if not raw_header:
-            logger.warning("Authorization header missing on protected endpoint")
-            return jsonify({"error": "Unauthorized, missing Authorization: Bearer token"}), 401
+        if auth_token:
+            if auth_token != AUTH_KEY:
+                logger.warning("Authorization token mismatch against AUTHKEY_SERVER_WEBSITE")
+                return jsonify({"error": "Unauthorized, invalid token"}), 403
+            return f(*args, **kwargs)
 
-        if auth_token != AUTH_KEY:
-            logger.warning("Authorization token mismatch against AUTHKEY_SERVER_WEBSITE")
-            return jsonify({"error": "Unauthorized, invalid token"}), 401
-        return f(*args, **kwargs)
+        if session.get('logged_in'):
+            logger.debug("Authenticated via session; Authorization header missing")
+            return f(*args, **kwargs)
+
+        logger.warning("Authorization header missing on protected endpoint")
+        return jsonify({"error": "Unauthorized, missing Authorization: Bearer token"}), 403
     return decorated_function
 
 

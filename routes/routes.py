@@ -24,6 +24,7 @@ def index():
     return render_template("index.html")
 
 @bp.route('/login', methods=['GET', 'POST'])
+@require_auth
 def login():
     if request.method == 'POST':
         username = request.form['username']
@@ -36,6 +37,8 @@ def login():
     return render_template('login.html')
 
 @bp.route('/logout', methods=['POST'])
+@login_required
+@require_auth
 def logout():
     session.pop('logged_in', None)
     return jsonify({"message": "Logged out successfully"}), 200
@@ -44,6 +47,7 @@ def logout():
 @bp.route('/status', methods=['GET'])
 @handle_timeout
 @login_required
+@require_auth
 def status():
     try:
         response = http_session.get(
@@ -51,14 +55,17 @@ def status():
             headers=auth_key_header,
             timeout=DEFAULT_TIMEOUT_SECONDS
         )
+        if response.status_code == 403:
+            return jsonify({"error": f"Unauthorized, invalid token: {response.text}"}), 403
         return jsonify({"message": response.text}), response.status_code
-    except requests.exceptions.RequestException as e:
+    except requests.exceptions.RequestException:
         return jsonify({"error": "Unable to connect to the server", "host_status": "offline"}), 500
 
 
 @bp.route('/wake', methods=['POST'])
 @handle_timeout
 @login_required
+@require_auth
 def wake():
     send_magic_packet(TARGET_MAC_ADDRESS, ip_address=TARGET_IP_ADDRESS)
     return jsonify({"message": "WOL packet sent successfully! Machine is starting..."}), 200
@@ -66,6 +73,7 @@ def wake():
 @bp.route('/start', methods=['POST'])
 @handle_timeout
 @login_required
+@require_auth
 def start():
     global last_manual_start
     if last_manual_start and (datetime.datetime.now() - last_manual_start).total_seconds() < 10:
@@ -89,6 +97,7 @@ def start():
 @bp.route('/stop', methods=['POST'])
 @handle_timeout
 @login_required
+@require_auth
 def stop():
     try:
         response = http_session.post(
@@ -106,6 +115,7 @@ def stop():
 @bp.route('/restart', methods=['POST'])
 @handle_timeout
 @login_required
+@require_auth
 def restart():
     try:
         response = http_session.post(
