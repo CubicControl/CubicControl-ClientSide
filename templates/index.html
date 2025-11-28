@@ -34,11 +34,13 @@
         case 200:
           return 'online';
         case 205:
-          return 'booting';
+          return 'starting';
         case 206:
           return 'offline';
         case 207:
           return 'restarting';
+        case 208:
+          return 'stopping';
         case 403:
           return 'unauthorized';
         default:
@@ -70,7 +72,7 @@
         wakeOnLanButton.disabled = true;
         startButton.disabled = true;
         stopButton.disabled = false;
-      } else if (status === 'booting' || status === 'restarting') {
+      } else if (status === 'starting' || status === 'restarting' || status === 'stopping') {
         document.getElementById('host-status-icon').src = '/static/resources/online.png';
         document.getElementById('minecraft-status-icon').src = '/static/resources/loading.gif';
         restartButton.disabled = true;

@@ -34,11 +34,13 @@ def describe_status_code(status_code: Optional[int]) -> str:
     if status_code == 200:
         return "online"
     if status_code == 205:
-        return "booting"
+        return "starting"
     if status_code == 206:
         return "offline"
     if status_code == 207:
         return "restarting"
+    if status_code == 208:
+        return "stopping"  # <-- Add this line
     if status_code == 403:
         return "unauthorized"
     if status_code == 500:
