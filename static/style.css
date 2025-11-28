@@ -45,6 +45,27 @@ body {
     height: 30px;
 }
 
+
+.status-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f7fa;
+    border: 1px solid #e0e4ea;
+    border-radius: 8px;
+    padding: 12px 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    min-height: 40px;
+    max-width: 400px;
+    margin: 18px auto;
+}
+
+.status-text-icon {
+    width: 22px;
+    height: 22px;
+    margin-right: 12px;
+}
+
 .buttons {
     display: flex;
     flex-wrap: wrap; /* Allow buttons to wrap on small screens */

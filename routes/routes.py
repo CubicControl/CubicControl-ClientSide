@@ -2,18 +2,15 @@ import datetime
 from typing import Optional
 
 import requests
-from flask import render_template, jsonify, Blueprint, request, session, redirect, url_for
+from flask import Blueprint, jsonify, redirect, render_template, request, session, url_for
 from wakeonlan import send_magic_packet
 
-from utils.config import TARGET_IP_ADDRESS, TARGET_FLASK_SERVER_PORT, TARGET_MAC_ADDRESS, LOGIN_USERNAME, \
-    LOGIN_PASSWORD, AUTH_KEY
+from utils.backend import get_status, post_action
+from utils.config import LOGIN_PASSWORD, LOGIN_USERNAME, TARGET_IP_ADDRESS, TARGET_MAC_ADDRESS
 from utils.wrappers import handle_timeout, login_required, require_auth
 from utils.state import load_last_manual_start, save_last_manual_start
+from secrets import compare_digest
 
-
-DEFAULT_TIMEOUT_SECONDS = 5
-http_session = requests.Session()
-auth_key_header = {'Authorization': f'Bearer {AUTH_KEY}'}
 bp = Blueprint('routes', __name__)
 
 last_manual_start: Optional[datetime.datetime] = load_last_manual_start()
@@ -24,12 +21,11 @@ def index():
     return render_template("index.html")
 
 @bp.route('/login', methods=['GET', 'POST'])
-@require_auth
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if username == LOGIN_USERNAME and password == LOGIN_PASSWORD:
+        if username == LOGIN_USERNAME and compare_digest(password, LOGIN_PASSWORD):
             session['logged_in'] = True
             return redirect(url_for('routes.index'))
         else:
@@ -50,11 +46,7 @@ def logout():
 @require_auth
 def status():
     try:
-        response = http_session.get(
-            f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/status",
-            headers=auth_key_header,
-            timeout=DEFAULT_TIMEOUT_SECONDS
-        )
+        response = get_status()
         if response.status_code == 403:
             return jsonify({"error": f"Unauthorized, invalid token: {response.text}"}), 403
         return jsonify({"message": response.text}), response.status_code
@@ -80,11 +72,7 @@ def start():
         return jsonify({"error": "Server was started too recently"}), 400
 
     try:
-        response = http_session.post(
-            f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/start",
-            headers=auth_key_header,
-            timeout=DEFAULT_TIMEOUT_SECONDS
-        )
+        response = post_action("/start")
         if response.status_code == 200:
             last_manual_start = datetime.datetime.now()
             save_last_manual_start(last_manual_start)
@@ -100,11 +88,7 @@ def start():
 @require_auth
 def stop():
     try:
-        response = http_session.post(
-            f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/stop",
-            headers=auth_key_header,
-            timeout=DEFAULT_TIMEOUT_SECONDS
-        )
+        response = post_action("/stop")
         return jsonify({"message": response.text}), response.status_code
     except requests.exceptions.ConnectTimeout:
         return jsonify({"error": "Unable to connect to the server: Connection timed out"}), 504
@@ -118,11 +102,7 @@ def stop():
 @require_auth
 def restart():
     try:
-        response = http_session.post(
-            f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}/restart",
-            headers=auth_key_header,
-            timeout=DEFAULT_TIMEOUT_SECONDS
-        )
+        response = post_action("/restart")
         return jsonify({"message": response.text}), response.status_code
     except requests.exceptions.ConnectTimeout:
         return jsonify({"error": "Unable to connect to the server: Connection timed out"}), 504
