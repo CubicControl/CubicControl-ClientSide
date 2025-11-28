@@ -1,4 +1,6 @@
 import datetime
+import re
+from secrets import compare_digest
 from typing import Optional
 
 import requests
@@ -7,21 +9,26 @@ from wakeonlan import send_magic_packet
 
 from utils.backend import get_status, post_action
 from utils.config import LOGIN_PASSWORD, LOGIN_USERNAME, TARGET_IP_ADDRESS, TARGET_MAC_ADDRESS
-from utils.wrappers import handle_timeout, login_required, require_auth
+from utils.servername_config import get_server_name
 from utils.state import load_last_manual_start, save_last_manual_start
-from secrets import compare_digest
+from utils.wrappers import handle_timeout, login_required, require_auth
 
+MAC_REGEX = r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$'
 bp = Blueprint('routes', __name__)
+
+CONNECTION_TIMEOUT_ERROR_MESSAGE = "Unable to connect to the server: Connection timed out"
 
 last_manual_start: Optional[datetime.datetime] = load_last_manual_start()
 @bp.route('/')
 def index():
     if not session.get('logged_in'):
         return redirect(url_for('routes.login'))
-    return render_template("index.html")
+    return render_template("index.html", server_name=get_server_name())
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
+    if session.get('logged_in'):
+        return redirect(url_for('routes.index'))
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -30,14 +37,17 @@ def login():
             return redirect(url_for('routes.index'))
         else:
             return jsonify({"error": "Invalid credentials"}), 401
-    return render_template('login.html')
+    return render_template('login.html', server_name=get_server_name())
 
-@bp.route('/logout', methods=['POST'])
+@bp.route('/logout', methods=['GET', 'POST'])
 @login_required
 @require_auth
 def logout():
     session.pop('logged_in', None)
-    return jsonify({"message": "Logged out successfully"}), 200
+    if request.method == 'POST':
+        return jsonify({"message": "Logged out successfully"}), 200
+    else:
+        return redirect(url_for('routes.login'))
 
 
 @bp.route('/status', methods=['GET'])
@@ -55,12 +65,18 @@ def status():
 
 
 @bp.route('/wake', methods=['POST'])
-@handle_timeout
 @login_required
 @require_auth
 def wake():
-    send_magic_packet(TARGET_MAC_ADDRESS, ip_address=TARGET_IP_ADDRESS)
-    return jsonify({"message": "WOL packet sent successfully! Machine is starting..."}), 200
+    if not re.match(MAC_REGEX, TARGET_MAC_ADDRESS):
+        return jsonify({"error": "Invalid MAC address format"}), 400
+    try:
+        send_magic_packet(TARGET_MAC_ADDRESS, ip_address=TARGET_IP_ADDRESS)
+        return jsonify({"message": "Wake command sent successfully"}), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": "Internal server error: " + str(e)}), 500
 
 @bp.route('/start', methods=['POST'])
 @handle_timeout
@@ -78,7 +94,7 @@ def start():
             save_last_manual_start(last_manual_start)
         return jsonify({"message": response.text }), response.status_code
     except requests.exceptions.ConnectTimeout:
-        return jsonify({"error": "Unable to connect to the server: Connection timed out"}), 504
+        return jsonify({"error": CONNECTION_TIMEOUT_ERROR_MESSAGE}), 504
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
@@ -91,7 +107,7 @@ def stop():
         response = post_action("/stop")
         return jsonify({"message": response.text}), response.status_code
     except requests.exceptions.ConnectTimeout:
-        return jsonify({"error": "Unable to connect to the server: Connection timed out"}), 504
+        return jsonify({"error": CONNECTION_TIMEOUT_ERROR_MESSAGE}), 504
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
