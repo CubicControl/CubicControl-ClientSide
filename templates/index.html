@@ -96,20 +96,42 @@
       }
     }
 
+
     async function wakeOnLan() {
-      try {
-        const response = await fetch('/wake', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        const result = await response.json();
-        alert(result.message || result.error);
-      } catch (error) {
-        alert(`Error: ${error}`);
-      }
+        const wakeButton = document.getElementById('wakeOnLanButton');
+        const statusText = document.getElementById('status-text');
+        wakeButton.disabled = true;
+        statusText.textContent = "Magic Packet sent, waiting for machine to start...";
+
+        try {
+            const response = await fetch('/wake', {method: 'POST'});
+            const result = await response.json();
+            alert(result.message || result.error);
+
+            const timeout = 6000; // 45 seconds
+            const interval = 2000; // 5 seconds
+            const start = Date.now();
+
+            while (Date.now() - start < timeout) {
+                const statusRes = await fetch('/status');
+                const statusData = await statusRes.json();
+                if (statusData.message && statusData.message.toLowerCase().includes('online')) {
+                    return;
+                }
+                await new Promise(r => setTimeout(r, interval));
+            }
+            alert('Error: The machine did not start within 1 minute.');
+        } catch (error) {
+            alert(`Error: ${error}`);
+        } finally {
+            wakeButton.disabled = false;
+            // Request a fresh status update from the websocket
+            if (typeof socket !== "undefined") {
+                socket.emit('request_status');
+            }
+        }
     }
+
 
     async function stopServer() {
       try {
@@ -159,10 +181,11 @@
 </head>
 <body>
 <div class="page-wrapper">
-  <div class="logo-container">
-    <img src="/static/resources/jmglogo.png" alt="JMG Logo">
-  </div>
-  <div class="container">
+    <div class="logo-container">
+        <img src="/static/resources/logo.png" alt="Logo">
+        <div class="server-name">{{ server_name }}</div>
+    </div>
+    <div class="container">
     <div class="status">
       <h2>Host Machine Status: <img id="host-status-icon" src="/static/resources/loading.gif" alt="Host Status"></h2>
     </div>
