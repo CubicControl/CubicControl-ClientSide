@@ -108,8 +108,8 @@
             const result = await response.json();
             alert(result.message || result.error);
 
-            const timeout = 6000; // 45 seconds
-            const interval = 2000; // 5 seconds
+            const timeout = 45000; // 45 seconds
+            const interval = 5000; // 5 seconds
             const start = Date.now();
 
             while (Date.now() - start < timeout) {
