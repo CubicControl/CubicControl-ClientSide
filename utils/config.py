@@ -10,7 +10,6 @@ def _require_env(var_name: str) -> str:
 AUTH_KEY = "SECRETKEYSPIRIT"
 TARGET_MAC_ADDRESS = "24-4B-FE-DE-E2-8C"
 TARGET_IP_ADDRESS = "jmgaming.chickenkiller.com"
-TARGET_FLASK_SERVER_PORT = ""
 LOGIN_USERNAME = _require_env('LOGIN_USERNAME')
 LOGIN_PASSWORD = _require_env('LOGIN_PASSWORD')
 

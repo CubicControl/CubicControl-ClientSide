@@ -2,7 +2,7 @@ from typing import Optional
 
 import requests
 
-from utils.config import AUTH_KEY, TARGET_FLASK_SERVER_PORT, TARGET_IP_ADDRESS
+from utils.config import AUTH_KEY, TARGET_IP_ADDRESS
 
 
 DEFAULT_TIMEOUT_SECONDS = 5
@@ -11,7 +11,7 @@ auth_key_header = {"Authorization": f"Bearer {AUTH_KEY}"}
 
 
 def _build_backend_url(path: str) -> str:
-    return f"https://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}{path}"
+    return f"https://{TARGET_IP_ADDRESS}{path}"
 
 
 def get_status() -> requests.Response:
