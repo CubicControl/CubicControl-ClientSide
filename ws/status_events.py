@@ -26,7 +26,15 @@ def _build_payload(status_code: Optional[int], message: str) -> Dict:
 def _fetch_status_payload() -> Dict:
     try:
         response = get_status()
-        return _build_payload(response.status_code, response.text)
+        # Treat any HTTP error (including 5xx/502 when backend is down) as unreachable
+        response.raise_for_status()
+        message = response.text.strip() or "Machine is not reachable. It may be powered off."
+        return _build_payload(response.status_code, message)
+    except requests.exceptions.HTTPError as exc:
+        code = exc.response.status_code if exc.response else None
+        if code and code >= 500:
+            return _build_payload(None, "Machine is not reachable. It may be powered off.")
+        return _build_payload(code, f"Backend request failed (HTTP {code})")
     except requests.exceptions.Timeout:
         return _build_payload(None, "Machine is not reachable. It may be powered off.")
     except requests.exceptions.ConnectionError as exc:

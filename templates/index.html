@@ -53,7 +53,8 @@
 
       const statusText = document.getElementById('status-text');
       // "Server Machine is live!\nMinecraft Server is ONLINE" should be truncated to "Minecraft Server is ONLINE"
-      statusText.textContent = payload?.message?.split('\n').slice(-1)[0] ?? 'No status message available';
+      const rawMessage = (payload?.message || '').trim() || 'Machine is not reachable. It may be powered off.';
+      statusText.textContent = rawMessage.split('\n').slice(-1)[0];
 
       const normalized = normalizeStatus(payload);
       updateStatusIcons(normalized);
