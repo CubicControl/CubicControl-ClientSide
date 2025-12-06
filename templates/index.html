@@ -59,6 +59,12 @@
       updateStatusIcons(normalized);
     }
 
+    function setDisabled(button, disabled) {
+      if (button) {
+        button.disabled = disabled;
+      }
+    }
+
     function updateStatusIcons(status) {
       const restartButton = document.getElementById('restartButton');
       const wakeOnLanButton = document.getElementById('wakeOnLanButton');
@@ -68,31 +74,31 @@
       if (status === 'online') {
         document.getElementById('host-status-icon').src = '/static/resources/online.png';
         document.getElementById('minecraft-status-icon').src = '/static/resources/online.png';
-        restartButton.disabled = false;
-        wakeOnLanButton.disabled = true;
-        startButton.disabled = true;
-        stopButton.disabled = false;
+        setDisabled(restartButton, false);
+        setDisabled(wakeOnLanButton, true);
+        setDisabled(startButton, true);
+        setDisabled(stopButton, false);
       } else if (status === 'starting' || status === 'restarting' || status === 'stopping') {
         document.getElementById('host-status-icon').src = '/static/resources/online.png';
         document.getElementById('minecraft-status-icon').src = '/static/resources/loading.gif';
-        restartButton.disabled = true;
-        wakeOnLanButton.disabled = true;
-        startButton.disabled = true;
-        stopButton.disabled = true;
+        setDisabled(restartButton, true);
+        setDisabled(wakeOnLanButton, true);
+        setDisabled(startButton, true);
+        setDisabled(stopButton, true);
       } else if (status === 'offline') {
         document.getElementById('host-status-icon').src = '/static/resources/online.png';
         document.getElementById('minecraft-status-icon').src = '/static/resources/offline.png';
-        restartButton.disabled = true;
-        wakeOnLanButton.disabled = true;
-        startButton.disabled = false;
-        stopButton.disabled = true;
+        setDisabled(restartButton, true);
+        setDisabled(wakeOnLanButton, true);
+        setDisabled(startButton, false);
+        setDisabled(stopButton, true);
       } else {
         document.getElementById('host-status-icon').src = '/static/resources/offline.png';
         document.getElementById('minecraft-status-icon').src = '/static/resources/offline.png';
-        restartButton.disabled = true;
-        wakeOnLanButton.disabled = false;
-        startButton.disabled = true;
-        stopButton.disabled = true;
+        setDisabled(restartButton, true);
+        setDisabled(wakeOnLanButton, false);
+        setDisabled(startButton, true);
+        setDisabled(stopButton, true);
       }
     }
 
@@ -100,6 +106,7 @@
     async function wakeOnLan() {
         const wakeButton = document.getElementById('wakeOnLanButton');
         const statusText = document.getElementById('status-text');
+        if (!wakeButton) return;
         wakeButton.disabled = true;
         statusText.textContent = "Magic Packet sent, waiting for machine to start...";
 
@@ -194,10 +201,18 @@
     </div>
     <p id="status-text" class="status-text">Waiting for status...</p>
     <div class="buttons">
+      {% if button_permissions.wake %}
       <button id="wakeOnLanButton" onclick="wakeOnLan()" disabled>Wake on LAN</button>
+      {% endif %}
+      {% if button_permissions.start %}
       <button id="startButton" onclick="startServer()" disabled>Start Server</button>
+      {% endif %}
+      {% if button_permissions.stop %}
       <button id="stopButton" onclick="stopServer()" disabled>Stop Server</button>
+      {% endif %}
+      {% if button_permissions.restart %}
       <button id="restartButton" onclick="restartServer()" disabled>Restart Server</button>
+      {% endif %}
     </div>
   </div>
 </div>

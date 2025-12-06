@@ -11,7 +11,7 @@ auth_key_header = {"Authorization": f"Bearer {AUTH_KEY}"}
 
 
 def _build_backend_url(path: str) -> str:
-    return f"http://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}{path}"
+    return f"https://{TARGET_IP_ADDRESS}:{TARGET_FLASK_SERVER_PORT}{path}"
 
 
 def get_status() -> requests.Response:
@@ -40,7 +40,7 @@ def describe_status_code(status_code: Optional[int]) -> str:
     if status_code == 207:
         return "restarting"
     if status_code == 208:
-        return "stopping"  # <-- Add this line
+        return "stopping"
     if status_code == 403:
         return "unauthorized"
     if status_code == 500:
