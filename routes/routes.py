@@ -8,6 +8,7 @@ from flask import Blueprint, jsonify, redirect, render_template, request, sessio
 from wakeonlan import send_magic_packet
 
 from utils.backend import get_status, post_action
+from utils.button_permissions import BUTTON_PERMISSIONS, is_allowed
 from utils.config import LOGIN_PASSWORD, LOGIN_USERNAME, TARGET_IP_ADDRESS, TARGET_MAC_ADDRESS
 from utils.servername_config import get_server_name
 from utils.state import load_last_manual_start, save_last_manual_start
@@ -18,12 +19,15 @@ bp = Blueprint('routes', __name__)
 
 CONNECTION_TIMEOUT_ERROR_MESSAGE = "Unable to connect to the server: Connection timed out"
 
+def _deny_action():
+    return jsonify({"error": "Action not allowed"}), 403
+
 last_manual_start: Optional[datetime.datetime] = load_last_manual_start()
 @bp.route('/')
 def index():
     if not session.get('logged_in'):
         return redirect(url_for('routes.login'))
-    return render_template("index.html", server_name=get_server_name())
+    return render_template("index.html", server_name=get_server_name(), button_permissions=BUTTON_PERMISSIONS)
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -68,6 +72,8 @@ def status():
 @login_required
 @require_auth
 def wake():
+    if not is_allowed("wake"):
+        return _deny_action()
     if not re.match(MAC_REGEX, TARGET_MAC_ADDRESS):
         return jsonify({"error": "Invalid MAC address format"}), 400
     try:
@@ -83,6 +89,8 @@ def wake():
 @login_required
 @require_auth
 def start():
+    if not is_allowed("start"):
+        return _deny_action()
     global last_manual_start
     if last_manual_start and (datetime.datetime.now() - last_manual_start).total_seconds() < 10:
         return jsonify({"error": "Server was started too recently"}), 400
@@ -103,6 +111,8 @@ def start():
 @login_required
 @require_auth
 def stop():
+    if not is_allowed("stop"):
+        return _deny_action()
     try:
         response = post_action("/stop")
         return jsonify({"message": response.text}), response.status_code
@@ -117,6 +127,8 @@ def stop():
 @login_required
 @require_auth
 def restart():
+    if not is_allowed("restart"):
+        return _deny_action()
     try:
         response = post_action("/restart")
         return jsonify({"message": response.text}), response.status_code
@@ -124,4 +136,3 @@ def restart():
         return jsonify({"error": "Unable to connect to the server: Connection timed out"}), 504
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
-
