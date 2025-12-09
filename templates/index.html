@@ -8,21 +8,138 @@
   <link rel="icon" type="image/x-icon" href="/static/resources/favicon.ico">
   <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
   <script>
+    const socket = io();
 
-    async function wakeOnLan() {
-      try {
-        const response = await fetch('/wake', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        const result = await response.json();
-        alert(result.message || result.error);
-      } catch (error) {
-        alert(`Error: ${error}`);
+    socket.on('connect', () => {
+      socket.emit('request_status');
+    });
+
+    socket.on('status_update', (payload) => {
+      updateStatus(payload);
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('Socket error', err);
+      updateStatusIcons(null);
+    });
+
+    function normalizeStatus(payload) {
+      if (!payload) return null;
+
+      if (payload.status) {
+        return payload.status.toLowerCase();
+      }
+
+      switch (payload.status_code) {
+        case 200:
+          return 'online';
+        case 205:
+          return 'starting';
+        case 206:
+          return 'offline';
+        case 207:
+          return 'restarting';
+        case 208:
+          return 'stopping';
+        case 403:
+          return 'unauthorized';
+        default:
+          return null;
       }
     }
+
+    function updateStatus(payload) {
+      console.debug('Received status update', payload);
+
+      const statusText = document.getElementById('status-text');
+      // "Server Machine is live!\nMinecraft Server is ONLINE" should be truncated to "Minecraft Server is ONLINE"
+      const rawMessage = (payload?.message || '').trim() || 'Machine is not reachable. It may be powered off.';
+      statusText.textContent = rawMessage.split('\n').slice(-1)[0];
+
+      const normalized = normalizeStatus(payload);
+      updateStatusIcons(normalized);
+    }
+
+    function setDisabled(button, disabled) {
+      if (button) {
+        button.disabled = disabled;
+      }
+    }
+
+    function updateStatusIcons(status) {
+      const restartButton = document.getElementById('restartButton');
+      const wakeOnLanButton = document.getElementById('wakeOnLanButton');
+      const startButton = document.getElementById('startButton');
+      const stopButton = document.getElementById('stopButton');
+
+      if (status === 'online') {
+        document.getElementById('host-status-icon').src = '/static/resources/online.png';
+        document.getElementById('minecraft-status-icon').src = '/static/resources/online.png';
+        setDisabled(restartButton, false);
+        setDisabled(wakeOnLanButton, true);
+        setDisabled(startButton, true);
+        setDisabled(stopButton, false);
+      } else if (status === 'starting' || status === 'restarting' || status === 'stopping') {
+        document.getElementById('host-status-icon').src = '/static/resources/online.png';
+        document.getElementById('minecraft-status-icon').src = '/static/resources/loading.gif';
+        setDisabled(restartButton, true);
+        setDisabled(wakeOnLanButton, true);
+        setDisabled(startButton, true);
+        setDisabled(stopButton, true);
+      } else if (status === 'offline') {
+        document.getElementById('host-status-icon').src = '/static/resources/online.png';
+        document.getElementById('minecraft-status-icon').src = '/static/resources/offline.png';
+        setDisabled(restartButton, true);
+        setDisabled(wakeOnLanButton, true);
+        setDisabled(startButton, false);
+        setDisabled(stopButton, true);
+      } else {
+        document.getElementById('host-status-icon').src = '/static/resources/offline.png';
+        document.getElementById('minecraft-status-icon').src = '/static/resources/offline.png';
+        setDisabled(restartButton, true);
+        setDisabled(wakeOnLanButton, false);
+        setDisabled(startButton, true);
+        setDisabled(stopButton, true);
+      }
+    }
+
+
+    async function wakeOnLan() {
+        const wakeButton = document.getElementById('wakeOnLanButton');
+        const statusText = document.getElementById('status-text');
+        if (!wakeButton) return;
+        wakeButton.disabled = true;
+        statusText.textContent = "Magic Packet sent, waiting for machine to start...";
+
+        try {
+            const response = await fetch('/wake', {method: 'POST'});
+            const result = await response.json();
+            alert(result.message || result.error);
+
+            const timeout = 45000; // 45 seconds
+            const interval = 5000; // 5 seconds
+            const start = Date.now();
+
+            while (Date.now() - start < timeout) {
+                const statusRes = await fetch('/status');
+                const statusData = await statusRes.json();
+                if (statusData.message && statusData.message.toLowerCase().includes('online')) {
+                    return;
+                }
+                await new Promise(r => setTimeout(r, interval));
+            }
+            alert('Error: The machine did not start within 1 minute.');
+        } catch (error) {
+            alert(`Error: ${error}`);
+        } finally {
+            wakeButton.disabled = false;
+            // Request a fresh status update from the websocket
+            if (typeof socket !== "undefined") {
+                socket.emit('request_status');
+            }
+        }
+    }
+
 
     async function stopServer() {
       try {
@@ -68,85 +185,35 @@
         alert(`Error: ${error}`);
       }
     }
-
-    async function checkServerStatus() {
-        try {
-        const response = await fetch('/status');
-        const restartButton = document.getElementById('restartButton');
-        const wakeOnLanButton = document.getElementById('wakeOnLanButton');
-        const startButton = document.getElementById('startButton');
-        const stopButton = document.getElementById('stopButton');
-        if (response.status === 200) {
-          // Fully loaded
-          document.getElementById('host-status-icon').src = '/static/resources/online.png';
-          document.getElementById('minecraft-status-icon').src = '/static/resources/online.png';
-          restartButton.disabled = false;
-          wakeOnLanButton.disabled = true;
-          startButton.disabled = true;
-          stopButton.disabled = false;
-        } else if (response.status === 205) {
-          // Booting Server
-          document.getElementById('host-status-icon').src = '/static/resources/online.png';
-          document.getElementById('minecraft-status-icon').src = '/static/resources/loading.gif';
-          restartButton.disabled = true;
-          wakeOnLanButton.disabled = true;
-          startButton.disabled = true;
-          stopButton.disabled = true;
-        } else if (response.status === 206) {
-          // Server Offline
-          document.getElementById('host-status-icon').src = '/static/resources/online.png';
-          document.getElementById('minecraft-status-icon').src = '/static/resources/offline.png';
-          restartButton.disabled = true;
-          wakeOnLanButton.disabled = true;
-          startButton.disabled = false;
-          stopButton.disabled = true;
-        } else if (response.status === 207) {
-          // Server Restarting
-          document.getElementById('host-status-icon').src = '/static/resources/online.png';
-          document.getElementById('minecraft-status-icon').src = '/static/resources/loading.gif';
-          restartButton.disabled = true;
-          wakeOnLanButton.disabled = true;
-          startButton.disabled = true;
-          stopButton.disabled = true;
-        } else {
-          // General failure/unknown status or Both machine and server are offline
-          document.getElementById('host-status-icon').src = '/static/resources/offline.png';
-          document.getElementById('minecraft-status-icon').src = '/static/resources/offline.png';
-          restartButton.disabled = true;
-          wakeOnLanButton.disabled = false;
-          startButton.disabled = true;
-          stopButton.disabled = true;
-        } } catch (error) {
-          // Error case
-          document.getElementById('host-status-icon').src = '/static/resources/offline.png';
-          document.getElementById('minecraft-status-icon').src = '/static/resources/offline.png';
-          document.getElementById('restartButton').disabled = true;
-          document.getElementById('wakeOnLanButton').disabled = false;
-          document.getElementById('startButton').disabled = true;
-          document.getElementById('stopButton').disabled = true;
-        }
-    }
-
-    setInterval(checkServerStatus, 5000); // Check every 5 seconds
   </script>
 </head>
 <body>
 <div class="page-wrapper">
-  <div class="logo-container">
-    <img src="/static/resources/jmglogo.png" alt="JMG Logo">
-  </div>
-  <div class="container">
+    <div class="logo-container">
+        <img src="/static/resources/logo.png" alt="Logo">
+        <div class="server-name">{{ server_name }}</div>
+    </div>
+    <div class="container">
     <div class="status">
       <h2>Host Machine Status: <img id="host-status-icon" src="/static/resources/loading.gif" alt="Host Status"></h2>
     </div>
     <div class="status">
       <h2>Minecraft Server Status: <img id="minecraft-status-icon" src="/static/resources/loading.gif" alt="Minecraft Status"></h2>
     </div>
+    <p id="status-text" class="status-text">Waiting for status...</p>
     <div class="buttons">
+      {% if button_permissions.wake %}
       <button id="wakeOnLanButton" onclick="wakeOnLan()" disabled>Wake on LAN</button>
+      {% endif %}
+      {% if button_permissions.start %}
       <button id="startButton" onclick="startServer()" disabled>Start Server</button>
+      {% endif %}
+      {% if button_permissions.stop %}
       <button id="stopButton" onclick="stopServer()" disabled>Stop Server</button>
+      {% endif %}
+      {% if button_permissions.restart %}
       <button id="restartButton" onclick="restartServer()" disabled>Restart Server</button>
+      {% endif %}
     </div>
   </div>
 </div>
