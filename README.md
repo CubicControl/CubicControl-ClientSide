@@ -18,7 +18,7 @@ CubicControl ClientSide is a lightweight Flask + Socket.IO web UI that talks to 
 - Session-based login protects the panel; a static SECRET_KEY prevents session churn across restarts.
 
 ## Deploy to Render (recommended)
-1. Create a new Web Service on Render (free tier is fine) and connect put this repository url as source.
+1. Create a new Web Service on Render (free tier is fine) and put this repository url as source.
 2. Set Environment to Python; Build command: `pip install -r requirements.txt`; Start command: `python app.py`.
 3. Add the environment variables from `envvars.env` (see table below). Set `AUTHKEY_SERVER_WEBSITE` to the same value as the AUTH_KEY configured in CubicControl-Launcher/ServerSide.
 4. Point `TARGET_IP_ADDRESS_SERVER` at the public domain/IP where the launcher (and its Caddy proxy) is reachable.
