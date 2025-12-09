@@ -3,7 +3,13 @@
 </p>
 <br>
 
-CubicControl ClientSide is a lightweight Flask + Socket.IO web UI that talks to the CubicControl-Launcher backend (ServerSide) so friends can wake, start, stop, and restart your Minecraft server remotely. Deploy it on Render's free tier to keep your home machine private while exposing only the control surface.
+CubicControl ClientSide is a lightweight Flask + Socket.IO web UI that talks to the [CubicControl-Launcher](https://github.com/CubicControl/CubicControl-Launcher) so friends can wake, start, stop, and restart your Minecraft server remotely. Deploy it on Render's free tier to keep your home machine private while exposing only the control surface.
+
+> ⚠️ **Disclaimer**
+>
+> **I am not a professional developer.** CubicControl started as a personal project that I decided to share in case others find it useful or enjoyable. While I have done my best to ensure the code is functional and free of major bugs, there may be inconsistencies or coding issues present.  
+> **This is an ongoing project, and improvements or fixes will continue over time.**
+
 
 ## How it works
 - Proxies start/stop/restart/status requests to the launcher backend using a shared AUTH key for Authorization: Bearer headers.
