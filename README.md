@@ -36,11 +36,9 @@ CubicControl ClientSide is a lightweight Flask + Socket.IO web UI that talks to 
 - `TARGET_IP_ADDRESS_SERVER` (alias `TARGET_IP_ADDRESS`): Public domain or IP (plus optional port) where the ServerSide/Caddy endpoint is reachable, used to build https://TARGET/status and other calls.
 - `LOGIN_USERNAME`: Username required to sign in to this web UI.
 - `LOGIN_PASSWORD`: Password for the UI.
-- `SERVER_NAME`: Display name shown in the header of the UI; defaults to "Jean-mIcHeL GamIng" if unset.
+- `SERVER_NAME`: Display name shown in the header of the UI.
 - `ALLOW_WAKE`, `ALLOW_START`, `ALLOW_STOP`, `ALLOW_RESTART`: Per-button toggles; accepts true/false/1/0/yes/no/on/off; unset uses defaults (wake/start true, stop/restart false).
 - `SECRET_KEY` (optional): Static Flask secret for sessions; if omitted, a key is generated and persisted under `instance/secret_key`.
 
 ## Tips
-- Make sure the Render service can reach your launcher host (open firewall/ports as needed).
-- If you deploy on a different domain, update the allowed origin in `app.py` or set a matching Render custom domain.
 - Keep the AUTH key private; anyone with it can issue backend commands.
