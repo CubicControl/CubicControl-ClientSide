@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SpiritServer Control Panel</title>
+  <title>{{ server_name }} Control Panel</title>
   <link rel="stylesheet" href="/static/style.css">
   <link rel="icon" type="image/x-icon" href="/static/resources/favicon.ico">
   <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
@@ -190,7 +190,8 @@
 <body>
 <div class="page-wrapper">
     <div class="logo-container">
-        <img src="/static/resources/logo.png" alt="Logo">
+        <img src="/static/resources/CubicControlLogo.jpg" alt="Logo" style="max-width: 100%; width: 180px;">
+        <br>
         <div class="server-name">{{ server_name }}</div>
     </div>
     <div class="container">

@@ -35,6 +35,8 @@ def _fetch_status_payload() -> Dict:
         code = exc.response.status_code if exc.response else None
         if code == 502:
             return _build_payload(code, "Caddy is starting up on the server.")
+        if code in (401, 403):
+            return _build_payload(code, "Unauthorized - verify AUTH_KEY matches the server.")
         if code and code >= 500:
             return _build_payload(None, MACHINE_NOT_REACHABLE_MESSAGE)
         return _build_payload(code, f"Backend request failed (HTTP {code})")
