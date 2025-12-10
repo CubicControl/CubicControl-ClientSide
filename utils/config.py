@@ -7,8 +7,8 @@ def _require_env(var_name: str) -> str:
     return value
 
 # Production values from environment
-AUTH_KEY = _require_env('AUTHKEY_SERVER_WEBSITE')
-TARGET_MAC_ADDRESS = _require_env('TARGET_MAC_ADDRESS_SERVER')
-TARGET_IP_ADDRESS = _require_env('TARGET_IP_ADDRESS_SERVER')
+AUTH_KEY = _require_env('AUTH_KEY')
+TARGET_MAC_ADDRESS = _require_env('TARGET_MAC_ADDRESS')
+TARGET_IP_ADDRESS = _require_env('TARGET_IP_ADDRESS')
 LOGIN_USERNAME = _require_env('LOGIN_USERNAME')
 LOGIN_PASSWORD = _require_env('LOGIN_PASSWORD')
