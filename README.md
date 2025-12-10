@@ -1,6 +1,7 @@
 <p align="center">
-  <img src="static/resources/ClientSideLogo.png" alt="CubicControl Logo" width="500"/>
+  <img src="static/resources/ClientSideLogo.png" alt="CubicControl Logo" width="480"/>
 </p>
+
 <br>
 
 # CubicControl ClientSide
