@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="static/resources/ClientSideLogo.png" alt="CubicControl Logo" width="400"/>
+  <img src="static/resources/ClientSideLogo.png" alt="CubicControl Logo" width="500"/>
 </p>
 <br>
 
