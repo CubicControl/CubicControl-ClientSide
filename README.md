@@ -3,42 +3,122 @@
 </p>
 <br>
 
-CubicControl ClientSide is a lightweight Flask + Socket.IO web UI that talks to the [CubicControl-Launcher](https://github.com/CubicControl/CubicControl-Launcher) so friends can wake, start, stop, and restart your Minecraft server remotely. Deploy it on Render's free tier to keep your home machine private while exposing only the control surface.
+# CubicControl ClientSide
 
-> ⚠️ **Disclaimer**
->
-> **I am not a professional developer.** CubicControl started as a personal project that I decided to share in case others find it useful or enjoyable. While I have done my best to ensure the code is functional and free of major bugs, there may be inconsistencies or coding issues present.  
-> **This is an ongoing project, and improvements or fixes will continue over time.**
+CubicControl ClientSide is the **remote web interface** for the CubicControl ecosystem.  
+It works together with the **[CubicControl-Launcher](https://github.com/CubicControl/CubicControl-Launcher)** — the dedicated Windows control panel designed for running Minecraft servers on a spare or dedicated PC.
 
+ClientSide gives you (and your friends) the ability to safely **wake**, **start**, **stop**, and **monitor** your Minecraft server from anywhere, without exposing your local machine.  
+Deploying it on Render’s free tier makes the server fully remote-ready while keeping all sensitive services private.
 
-## How it works
-- Proxies start/stop/restart/status requests to the launcher backend using a shared AUTH key for Authorization: Bearer headers.
-- Sends Wake-on-LAN magic packets directly to your host MAC/IP when allowed.
-- UI buttons are shown/enabled based on ALLOW_* env flags and live status updates streamed over WebSocket.
-- Session-based login protects the panel; a static SECRET_KEY prevents session churn across restarts.
+<p align="center">
+  <a href="https://cubiccontrol.github.io/">
+    <img src="https://img.shields.io/badge/Full%20Guide-brightgreen?style=for-the-badge"/>
+  </a>
+</p>
 
-## Deploy to Render (recommended)
-1. Create a new Web Service on Render (free tier is fine) and put this repository url as source.
-2. Set Environment to Python; Build command: `pip install -r requirements.txt`; Start command: `python app.py`.
-3. Add the environment variables from `envvars.env` (see table below). Set `AUTHKEY_SERVER_WEBSITE` to the same value as the AUTH_KEY configured in CubicControl-Launcher/ServerSide.
-4. Point `TARGET_IP_ADDRESS_SERVER` at the public domain/IP where the launcher (and its Caddy proxy) is reachable.
-5. Deploy. Visit the Render URL, log in with `LOGIN_USERNAME` / `LOGIN_PASSWORD`, and use the buttons to wake/start/stop/restart the server.
+---
 
-## Run locally
-- `python -m venv .venv && .venv\Scripts\activate`
-- `pip install -r requirements.txt`
-- Set the env vars (you can copy `envvars.env` and export the keys), then `python app.py`.
-- Open http://localhost:5000 and log in.
+## 📝 Overview
 
-## Environment variables
-- `AUTHKEY_SERVER_WEBSITE` (alias `AUTH_KEY` in envvars.env): Shared secret used for Authorization: Bearer when calling ServerSide; must match the AUTH_KEY configured in CubicControl-Launcher.
-- `TARGET_MAC_ADDRESS_SERVER` (alias `TARGET_MAC_ADDRESS`): MAC address of the host PC for Wake-on-LAN (format `AA:BB:CC:DD:EE:FF`).
-- `TARGET_IP_ADDRESS_SERVER` (alias `TARGET_IP_ADDRESS`): Public domain or IP (plus optional port) where the ServerSide/Caddy endpoint is reachable, used to build https://TARGET/status and other calls.
-- `LOGIN_USERNAME`: Username required to sign in to this web UI.
-- `LOGIN_PASSWORD`: Password for the UI.
-- `SERVER_NAME`: Display name shown in the header of the UI.
-- `ALLOW_WAKE`, `ALLOW_START`, `ALLOW_STOP`, `ALLOW_RESTART`: Per-button toggles; accepts true/false/1/0/yes/no/on/off; unset uses defaults (wake/start true, stop/restart false).
-- `SECRET_KEY` (optional): Static Flask secret for sessions; if omitted, a key is generated and persisted under `instance/secret_key`.
+CubicControl ClientSide is a lightweight Flask + Socket.IO application that exposes a **secure, minimal remote UI** for your CubicControl-powered Minecraft server.
 
-## Tips
-- Keep the AUTH key private; anyone with it can issue backend commands.
+It is built for:
+
+- Allowing friends to start the server anytime  
+- Keeping the host PC asleep when idle  
+- Avoiding exposing the full launcher interface to the internet  
+- Zero-cost hosting powered by Render’s free tier  
+
+---
+
+## ⚠️ Disclaimer
+
+**I am not a professional developer.**  
+CubicControl began as a personal project that I chose to share publicly. While it works well, some parts may not follow perfect coding standards.  
+Improvements and fixes will continue over time.
+
+---
+
+## 🚀 Features
+
+- Remote **wake**, **start**, **stop**, and **restart** controls  
+- Live server status updates via WebSockets  
+- Secure login with customizable username/password  
+- Environment-based permission flags (`ALLOW_*`)  
+- Sends Wake-on-LAN packets directly to your host PC  
+- Works seamlessly with CubicControl-Launcher via shared `AUTH_KEY`  
+- Simple, free deployment using Render  
+
+---
+
+# 🌐 Deploy to Render (Recommended)
+
+1. Create a new **Web Service** on Render (free tier is enough).  
+2. Use this repository URL as the source.  
+3. Set:
+   - **Environment:** Python  
+   - **Build Command:** `pip install -r requirements.txt`  
+   - **Start Command:** `python app.py`  
+4. Add the required environment variables (see tables below).  
+5. Ensure `AUTHKEY_SERVER_WEBSITE` matches the `AUTH_KEY` from CubicControl-Launcher.  
+6. Set `TARGET_IP_ADDRESS_SERVER` to your public domain/IP (from your Caddy proxy).  
+7. Deploy and log in using your configured `LOGIN_USERNAME` / `LOGIN_PASSWORD`.
+
+# 💻 Run Locally
+
+```bash
+python -m venv .venv && .venv\Scripts\activate
+pip install -r requirements.txt
+# Set environment variables manually or using envvars.env
+python app.py
+```
+
+## Open
+
+➡️ http://localhost:5000
+
+Then log in using `LOGIN_USERNAME` / `LOGIN_PASSWORD`.
+
+---
+
+## 🔑 Environment Variables
+
+### **Required**
+
+| Variable                    | Description                                                                        |
+|-----------------------------|------------------------------------------------------------------------------------|
+| `AUTHKEY_SERVER_WEBSITE`    | Shared secret used in Authorization headers; must match Launcher's `AUTH_KEY`.     |
+| `TARGET_MAC_ADDRESS_SERVER` | MAC address of the host PC (`AA:BB:CC:DD:EE:FF`).                                  |
+| `TARGET_IP_ADDRESS_SERVER`  | Public domain or IP where the Launcher/Caddy API can be reached.                   |
+| `LOGIN_USERNAME`            | Username for logging into ClientSide.                                              |
+| `LOGIN_PASSWORD`            | Password for logging into ClientSide.                                              |
+| `SERVER_NAME`               | Display name shown in the UI.                                                      |
+
+### **Optional / Feature Toggles**
+
+| Variable         | Description                                                                |
+|------------------|----------------------------------------------------------------------------|
+| `ALLOW_WAKE`     | Enable/disable wake button (`true/false/1/0/yes/no`).                      |
+| `ALLOW_START`    | Enable/disable start button.                                               |
+| `ALLOW_STOP`     | Enable/disable stop button.                                                |
+| `ALLOW_RESTART`  | Enable/disable restart button.                                             |
+| `SECRET_KEY`     | Optional Flask session secret; auto-generated if missing.                  |
+
+---
+
+## 📘 Full Installation & Setup Guide
+
+A complete, step-by-step guide — covering Wake-on-LAN setup, port forwarding, Caddy, Launcher configuration, ClientSide deployment, and best practices — is available here:
+
+➡️ **https://cubiccontrol.github.io/**
+
+This is the recommended starting point for all new users.
+
+---
+
+## 💡 Tips
+
+- Never share your `AUTH_KEY`. Anyone with it can control the backend.  
+- If remote actions fail, re-check Wake-on-LAN settings (BIOS → Windows network adapter → router).  
+- Render’s free tier sleeps when inactive; your site may take a few seconds to wake up.
