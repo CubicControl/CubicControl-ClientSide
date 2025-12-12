@@ -54,7 +54,7 @@ def logout():
         return redirect(url_for('routes.login'))
 
 
-@bp.route('/status', methods=['GET'])
+@bp.route('api/server/status', methods=['GET'])
 @handle_timeout
 @login_required
 @require_auth
@@ -84,7 +84,7 @@ def wake():
     except Exception as e:
         return jsonify({"error": "Internal server error: " + str(e)}), 500
 
-@bp.route('/start', methods=['POST'])
+@bp.route('api/server/start', methods=['POST'])
 @handle_timeout
 @login_required
 @require_auth
@@ -106,7 +106,7 @@ def start():
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
-@bp.route('/stop', methods=['POST'])
+@bp.route('api/server/stop', methods=['POST'])
 @handle_timeout
 @login_required
 @require_auth
@@ -122,7 +122,7 @@ def stop():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 
-@bp.route('/restart', methods=['POST'])
+@bp.route('api/server/restart', methods=['POST'])
 @handle_timeout
 @login_required
 @require_auth
