@@ -54,7 +54,7 @@ def logout():
         return redirect(url_for('routes.login'))
 
 
-@bp.route('api/server/status', methods=['GET'])
+@bp.route('/api/server/status', methods=['GET'])
 @handle_timeout
 @login_required
 @require_auth
@@ -84,7 +84,7 @@ def wake():
     except Exception as e:
         return jsonify({"error": "Internal server error: " + str(e)}), 500
 
-@bp.route('api/server/start', methods=['POST'])
+@bp.route('/api/server/start', methods=['POST'])
 @handle_timeout
 @login_required
 @require_auth
@@ -96,7 +96,7 @@ def start():
         return jsonify({"error": "Server was started too recently"}), 400
 
     try:
-        response = post_action("/start")
+        response = post_action("/api/server/start")
         if response.status_code == 200:
             last_manual_start = datetime.datetime.now()
             save_last_manual_start(last_manual_start)
@@ -106,7 +106,7 @@ def start():
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
-@bp.route('api/server/stop', methods=['POST'])
+@bp.route('/api/server/stop', methods=['POST'])
 @handle_timeout
 @login_required
 @require_auth
@@ -114,7 +114,7 @@ def stop():
     if not is_allowed("stop"):
         return _deny_action()
     try:
-        response = post_action("/stop")
+        response = post_action("/api/server/stop")
         return jsonify({"message": response.text}), response.status_code
     except requests.exceptions.ConnectTimeout:
         return jsonify({"error": CONNECTION_TIMEOUT_ERROR_MESSAGE}), 504
@@ -122,7 +122,7 @@ def stop():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 
-@bp.route('api/server/restart', methods=['POST'])
+@bp.route('/api/server/restart', methods=['POST'])
 @handle_timeout
 @login_required
 @require_auth
@@ -130,7 +130,7 @@ def restart():
     if not is_allowed("restart"):
         return _deny_action()
     try:
-        response = post_action("/restart")
+        response = post_action("/api/server/restart")
         return jsonify({"message": response.text}), response.status_code
     except requests.exceptions.ConnectTimeout:
         return jsonify({"error": "Unable to connect to the server: Connection timed out"}), 504

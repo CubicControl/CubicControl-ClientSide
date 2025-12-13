@@ -16,7 +16,7 @@ def _build_backend_url(path: str) -> str:
 
 def get_status() -> requests.Response:
     return http_session.get(
-        _build_backend_url("/status"),
+        _build_backend_url("/api/server/status"),
         headers=auth_key_header,
         timeout=DEFAULT_TIMEOUT_SECONDS,
     )
